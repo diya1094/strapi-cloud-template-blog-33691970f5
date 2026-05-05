@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strapi + Nuxt.js Blog — Complete Guide</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3349;
+      --accent: #7c6af7;
+      --accent2: #4f9cf9;
+      --green: #3ecf8e;
+      --yellow: #f5a623;
+      --red: #f56565;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --code-bg: #151820;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+    .layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    nav {
+      width: 260px;
+      min-width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 28px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .nav-logo {
+      padding: 0 24px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .nav-logo span { font-size: 22px; }
+    .nav-section {
+      padding: 6px 24px 2px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+    nav a {
+      display: block;
+      padding: 7px 24px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+    }
+    nav a:hover, nav a.active {
+      color: var(--text);
+      background: var(--surface2);
+      border-left-color: var(--accent);
+    }
+
+    /* Main */
+    main {
+      flex: 1;
+      max-width: 860px;
+      padding: 48px 56px;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 48px;
+    }
+    .hero-badges { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .badge-purple { background: rgba(124,106,247,0.2); color: #a78bfa; border: 1px solid rgba(124,106,247,0.3); }
+    .badge-blue   { background: rgba(79,156,249,0.2); color: #93c5fd; border: 1px solid rgba(79,156,249,0.3); }
+    .badge-green  { background: rgba(62,207,142,0.2); color: #6ee7b7; border: 1px solid rgba(62,207,142,0.3); }
+    .hero h1 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+    .hero p { color: var(--muted); font-size: 15px; max-width: 600px; }
+
+    /* Stack cards */
+    .stack-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 48px; }
+    .stack-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .stack-card .icon { font-size: 26px; margin-bottom: 10px; }
+    .stack-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .stack-card p { font-size: 12px; color: var(--muted); }
+
+    /* Sections */
+    section { margin-bottom: 56px; }
+    section h2 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .step-num {
+      background: var(--accent);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 24px 0 10px;
+      color: var(--text);
+    }
+    p { margin-bottom: 12px; color: var(--text); }
+
+    /* Code blocks */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .code-label { font-size: 11px; font-weight: 600; color: var(--muted); font-family: monospace; }
+    .code-lang {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--border);
+      color: var(--muted);
+    }
+    .code-lang.bash   { background: rgba(62,207,142,0.15); color: #6ee7b7; }
+    .code-lang.vue    { background: rgba(62,207,142,0.15); color: #6ee7b7; }
+    .code-lang.js     { background: rgba(245,166,35,0.15);  color: #fbbf24; }
+    .code-lang.json   { background: rgba(79,156,249,0.15);  color: #93c5fd; }
+    .code-lang.env    { background: rgba(245,101,101,0.15); color: #fca5a5; }
+    pre {
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: 'Fira Code', 'Cascadia Code', 'SF Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #cdd6f4;
+    }
+    .kw  { color: #cba6f7; } /* keyword / tag */
+    .fn  { color: #89b4fa; } /* function / prop */
+    .str { color: #a6e3a1; } /* string */
+    .cm  { color: #585b70; font-style: italic; } /* comment */
+    .num { color: #fab387; } /* number */
+    .op  { color: #89dceb; } /* operator / punctuation highlight */
+
+    /* Info boxes */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      display: flex;
+      gap: 12px;
+      font-size: 13.5px;
+    }
+    .callout-info    { background: rgba(79,156,249,0.1);  border: 1px solid rgba(79,156,249,0.25); }
+    .callout-success { background: rgba(62,207,142,0.1);  border: 1px solid rgba(62,207,142,0.25); }
+    .callout-warn    { background: rgba(245,166,35,0.1);  border: 1px solid rgba(245,166,35,0.25); }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout-body { color: var(--text); }
+    .callout-body strong { display: block; margin-bottom: 3px; font-size: 13px; }
+
+    /* Steps list */
+    ol.steps { padding-left: 0; list-style: none; counter-reset: steps; }
+    ol.steps li {
+      counter-increment: steps;
+      padding: 12px 0 12px 48px;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+    ol.steps li:last-child { border-bottom: none; }
+    ol.steps li::before {
+      content: counter(steps);
+      position: absolute;
+      left: 0;
+      top: 14px;
+      width: 28px;
+      height: 28px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    ol.steps li strong { display: block; margin-bottom: 4px; font-size: 14px; }
+
+    /* File tree */
+    .file-tree {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      font-family: monospace;
+      font-size: 12.5px;
+      line-height: 1.9;
+      color: #cdd6f4;
+      margin: 16px 0;
+    }
+    .file-tree .dir  { color: #89b4fa; }
+    .file-tree .file { color: #a6e3a1; }
+    .file-tree .note { color: #585b70; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+    th { background: var(--surface2); padding: 10px 14px; text-align: left; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); border: 1px solid var(--border); }
+    td { padding: 10px 14px; border: 1px solid var(--border); color: var(--text); }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #cba6f7; }
+
+    /* Deploy cards */
+    .deploy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+    .deploy-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+    }
+    .deploy-card h4 { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+    .deploy-card .url { font-size: 12px; color: var(--accent2); margin-bottom: 12px; }
+    .deploy-card ol { padding-left: 18px; font-size: 13px; color: var(--muted); }
+    .deploy-card ol li { margin-bottom: 6px; }
+    .deploy-card ol li strong { color: var(--text); }
+
+    /* Footer */
+    footer {
+      margin-top: 60px;
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar nav -->
+  <nav>
+    <div class="nav-logo"><span>📝</span> Blog Guide</div>
+    <div class="nav-section">Overview</div>
+    <a href="#stack">Tech Stack</a>
+    <a href="#prereqs">Prerequisites</a>
+    <div class="nav-section">Backend</div>
+    <a href="#strapi-install">1. Install Strapi</a>
+    <a href="#strapi-content">2. Content Type</a>
+    <a href="#strapi-permissions">3. API Permissions</a>
+    <div class="nav-section">Frontend</div>
+    <a href="#nuxt-install">4. Install Nuxt</a>
+    <a href="#nuxt-config">5. nuxt.config.ts</a>
+    <a href="#nuxt-listing">6. Blog Listing Page</a>
+    <a href="#nuxt-single">7. Single Post Page</a>
+    <a href="#nuxt-styles">8. Global Styles</a>
+    <div class="nav-section">Deploy</div>
+    <a href="#deploy-strapi">9. Deploy Strapi</a>
+    <a href="#deploy-nuxt">10. Deploy Nuxt</a>
+    <a href="#env-vars">Env Variables</a>
+  </nav>
+
+  <!-- Main content -->
+  <main>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-badges">
+        <span class="badge badge-purple">Strapi v5</span>
+        <span class="badge badge-blue">Nuxt 3</span>
+        <span class="badge badge-green">Free Hosting</span>
+      </div>
+      <h1>Build & Host a Blog with Strapi + Nuxt.js</h1>
+      <p>A complete walkthrough: Strapi headless CMS as your backend, Nuxt 3 (Vue) as your frontend, Strapi Cloud for the API, and Vercel for the site. No cost to get started.</p>
+    </div>
+
+    <!-- Stack -->
+    <div class="stack-grid" id="stack">
+      <div class="stack-card">
+        <div class="icon">🧩</div>
+        <h3>Strapi (Backend)</h3>
+        <p>Headless CMS. Manages your blog posts and exposes a REST API.</p>
+      </div>
+      <div class="stack-card">
+        <div class="icon">💚</div>
+        <h3>Nuxt 3 (Frontend)</h3>
+        <p>Vue-based framework with SSR/SSG for a fast, SEO-friendly blog.</p>
+      </div>
+      <div class="stack-card">
+        <div class="icon">☁️</div>
+        <h3>Cloud Hosting</h3>
+        <p>Strapi Cloud (CMS) + Vercel (frontend). Both have free tiers.</p>
+      </div>
+    </div>
+
+    <!-- Prerequisites -->
+    <section id="prereqs">
+      <h2><span class="step-num">✓</span> Prerequisites</h2>
+      <table>
+        <thead><tr><th>Tool</th><th>Version</th><th>Install</th></tr></thead>
+        <tbody>
+          <tr><td>Node.js</td><td>≥ 18.x (LTS)</td><td><code>https://nodejs.org</code></td></tr>
+          <tr><td>npm / yarn</td><td>comes with Node</td><td>–</td></tr>
+          <tr><td>Git</td><td>any</td><td><code>https://git-scm.com</code></td></tr>
+          <tr><td>GitHub account</td><td>–</td><td>for deployment</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ─────────────── STRAPI ─────────────── -->
+    <section id="strapi-install">
+      <h2><span class="step-num">1</span> Install Strapi</h2>
+      <p>Run this command in your terminal. It creates a new Strapi v5 project with SQLite (no database setup needed locally).</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">terminal</span><span class="code-lang bash">bash</span></div>
+        <pre>npx create-strapi-app@latest my-blog-backend --quickstart</pre>
+      </div>
+      <p>Strapi will install dependencies and then <strong>automatically open the Admin panel at <code>http://localhost:1337/admin</code></strong>. Create your first admin user there.</p>
+      <div class="callout callout-info">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body"><strong>Folder structure</strong> Your Strapi project lives at <code>my-blog-backend/</code>. Keep it separate from the Nuxt frontend — they are two independent projects.</div>
+      </div>
+    </section>
+
+    <section id="strapi-content">
+      <h2><span class="step-num">2</span> Create the Article Content Type</h2>
+      <p>In the Strapi admin panel, go to <strong>Content-Type Builder → Create new collection type</strong>. Name it <code>Article</code>.</p>
+      <p>Add these fields:</p>
+      <table>
+        <thead><tr><th>Field name</th><th>Type</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>title</code></td><td>Short text</td><td>Required</td></tr>
+          <tr><td><code>slug</code></td><td>UID</td><td>Attached to <code>title</code> — auto-generates from title</td></tr>
+          <tr><td><code>excerpt</code></td><td>Short text</td><td>Optional — shown on listing page</td></tr>
+          <tr><td><code>content</code></td><td>Rich Text (Blocks)</td><td>The full article body</td></tr>
+          <tr><td><code>cover</code></td><td>Media (single image)</td><td>Optional cover image</td></tr>
+          <tr><td><code>publishedAt</code></td><td>(auto)</td><td>Built-in — use draft/publish toggle</td></tr>
+        </tbody>
+      </table>
+      <p>Click <strong>Save</strong>. Strapi will restart and your <code>/api/articles</code> endpoint is ready.</p>
+      <p>Now go to <strong>Content Manager → Articles</strong> and create a few test posts.</p>
+    </section>
+
+    <section id="strapi-permissions">
+      <h2><span class="step-num">3</span> Open the API to Public</h2>
+      <p>By default the API is locked. You need to allow public read access.</p>
+      <ol class="steps">
+        <li><strong>Settings → Users &amp; Permissions → Roles → Public</strong></li>
+        <li>Find <strong>Article</strong> in the permissions list</li>
+        <li>Check <strong>find</strong> and <strong>findOne</strong></li>
+        <li>Click <strong>Save</strong></li>
+      </ol>
+      <p>Test it: open <code>http://localhost:1337/api/articles?populate=cover</code> in your browser — you should see JSON.</p>
+      <div class="callout callout-success">
+        <div class="callout-icon">✅</div>
+        <div class="callout-body"><strong>Backend is ready!</strong> Your Strapi CMS is running on port 1337 with a public REST API. Keep this terminal window open.</div>
+      </div>
+    </section>
+
+    <!-- ─────────────── NUXT ─────────────── -->
+    <section id="nuxt-install">
+      <h2><span class="step-num">4</span> Create the Nuxt 3 Project</h2>
+      <p>Open a <strong>new terminal window</strong> (keep Strapi running), then:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">terminal</span><span class="code-lang bash">bash</span></div>
+        <pre>npx nuxi@latest init my-blog-frontend
+cd my-blog-frontend
+npm install</pre>
+      </div>
+      <p>Your frontend project structure will look like this:</p>
+      <div class="file-tree">
+<span class="dir">my-blog-frontend/</span>
+├── <span class="dir">pages/</span>           <span class="note"># create this folder</span>
+│   ├── <span class="file">index.vue</span>     <span class="note"># blog listing page (homepage)</span>
+│   └── <span class="dir">blog/</span>
+│       └── <span class="file">[slug].vue</span>  <span class="note"># single post page</span>
+├── <span class="dir">components/</span>      <span class="note"># create this folder</span>
+│   └── <span class="file">ArticleCard.vue</span>
+├── <span class="dir">assets/</span>
+│   └── <span class="file">main.css</span>
+├── <span class="file">nuxt.config.ts</span>
+├── <span class="file">app.vue</span>
+└── <span class="file">.env</span>
+      </div>
+    </section>
+
+    <section id="nuxt-config">
+      <h2><span class="step-num">5</span> nuxt.config.ts</h2>
+      <p>Replace the content of <code>nuxt.config.ts</code> with:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">nuxt.config.ts</span><span class="code-lang js">ts</span></div>
+        <pre><span class="cm">// https://nuxt.com/docs/api/configuration/nuxt-config</span>
+<span class="kw">export default</span> <span class="fn">defineNuxtConfig</span>({
+  devtools: { enabled: <span class="kw">true</span> },
+  css: [<span class="str">'~/assets/main.css'</span>],
+
+  runtimeConfig: {
+    <span class="cm">// Private keys (server-only)</span>
+    <span class="kw">public</span>: {
+      <span class="cm">// Exposed to the browser too — safe for read-only API URL</span>
+      strapiUrl: process.env.NUXT_PUBLIC_STRAPI_URL || <span class="str">'http://localhost:1337'</span>,
+    },
+  },
+
+  <span class="cm">// Enable auto-imports for pages/</span>
+  pages: <span class="kw">true</span>,
+})</pre>
+      </div>
+
+      <p>Create a <code>.env</code> file in the root of <code>my-blog-frontend/</code>:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">.env</span><span class="code-lang env">env</span></div>
+        <pre>NUXT_PUBLIC_STRAPI_URL=http://localhost:1337</pre>
+      </div>
+
+      <p>Also update <code>app.vue</code> to use the router outlet:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">app.vue</span><span class="code-lang vue">vue</span></div>
+        <pre><span class="kw">&lt;template&gt;</span>
+  <span class="fn">&lt;NuxtPage</span> <span class="fn">/&gt;</span>
+<span class="kw">&lt;/template&gt;</span></pre>
+      </div>
+    </section>
+
+    <section id="nuxt-listing">
+      <h2><span class="step-num">6</span> Blog Listing Page</h2>
+      <p>Create the file <code>pages/index.vue</code>:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">pages/index.vue</span><span class="code-lang vue">vue</span></div>
+        <pre><span class="kw">&lt;script setup</span> lang=<span class="str">"ts"</span><span class="kw">&gt;</span>
+<span class="kw">const</span> config = <span class="fn">useRuntimeConfig</span>()
+
+<span class="cm">// useFetch is auto-imported in Nuxt 3 — no imports needed</span>
+<span class="kw">const</span> { data: articles, pending, error } = <span class="kw">await</span> <span class="fn">useFetch</span>(
+  <span class="str">`</span><span class="op">${</span>config.public.strapiUrl<span class="op">}</span><span class="str">/api/articles`</span>,
+  {
+    query: {
+      <span class="str">'populate'</span>: <span class="str">'cover'</span>,
+      <span class="str">'sort'</span>: <span class="str">'publishedAt:desc'</span>,
+    },
+    transform: (res: <span class="kw">any</span>) =&gt; res.data,
+  }
+)
+
+<span class="fn">useHead</span>({
+  title: <span class="str">'My Blog'</span>,
+  meta: [{ name: <span class="str">'description'</span>, content: <span class="str">'A blog powered by Strapi &amp; Nuxt'</span> }],
+})
+<span class="kw">&lt;/script&gt;</span>
+
+<span class="kw">&lt;template&gt;</span>
+  <span class="fn">&lt;main</span> class=<span class="str">"container"</span><span class="fn">&gt;</span>
+    <span class="fn">&lt;header</span> class=<span class="str">"site-header"</span><span class="fn">&gt;</span>
+      <span class="fn">&lt;h1&gt;</span>My Blog<span class="fn">&lt;/h1&gt;</span>
+      <span class="fn">&lt;p&gt;</span>Thoughts, articles &amp; ideas.<span class="fn">&lt;/p&gt;</span>
+    <span class="fn">&lt;/header&gt;</span>
+
+    <span class="fn">&lt;div</span> <span class="kw">v-if</span>=<span class="str">"pending"</span> class=<span class="str">"loading"</span><span class="fn">&gt;</span>Loading articles…<span class="fn">&lt;/div&gt;</span>
+    <span class="fn">&lt;div</span> <span class="kw">v-else-if</span>=<span class="str">"error"</span> class=<span class="str">"error"</span><span class="fn">&gt;</span>Failed to load articles.<span class="fn">&lt;/div&gt;</span>
+
+    <span class="fn">&lt;div</span> <span class="kw">v-else</span> class=<span class="str">"articles-grid"</span><span class="fn">&gt;</span>
+      <span class="fn">&lt;ArticleCard</span>
+        <span class="kw">v-for</span>=<span class="str">"article in articles"</span>
+        <span class="kw">:key</span>=<span class="str">"article.id"</span>
+        <span class="kw">:article</span>=<span class="str">"article"</span>
+      <span class="fn">/&gt;</span>
+    <span class="fn">&lt;/div&gt;</span>
+  <span class="fn">&lt;/main&gt;</span>
+<span class="kw">&lt;/template&gt;</span></pre>
+      </div>
+
+      <p>Create <code>components/ArticleCard.vue</code>:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">components/ArticleCard.vue</span><span class="code-lang vue">vue</span></div>
+        <pre><span class="kw">&lt;script setup</span> lang=<span class="str">"ts"</span><span class="kw">&gt;</span>
+<span class="kw">const</span> config = <span class="fn">useRuntimeConfig</span>()
+<span class="kw">const</span> props = <span class="fn">defineProps</span>&lt;{ article: <span class="kw">any</span> }&gt;()
+
+<span class="kw">const</span> coverUrl = <span class="fn">computed</span>(() =&gt; {
+  <span class="kw">const</span> url = props.article.cover?.url
+  <span class="kw">if</span> (!url) <span class="kw">return null</span>
+  <span class="kw">return</span> url.startsWith(<span class="str">'http'</span>) ? url : <span class="str">`</span><span class="op">${</span>config.public.strapiUrl<span class="op">}</span><span class="op">${</span>url<span class="op">}</span><span class="str">`</span>
+})
+
+<span class="kw">const</span> date = <span class="fn">computed</span>(() =&gt;
+  <span class="kw">new</span> <span class="fn">Date</span>(props.article.publishedAt).<span class="fn">toLocaleDateString</span>(<span class="str">'en-US'</span>, {
+    year: <span class="str">'numeric'</span>, month: <span class="str">'long'</span>, day: <span class="str">'numeric'</span>,
+  })
+)
+<span class="kw">&lt;/script&gt;</span>
+
+<span class="kw">&lt;template&gt;</span>
+  <span class="fn">&lt;NuxtLink</span> <span class="kw">:to</span>=<span class="str">`/blog/${article.slug}`</span> class=<span class="str">"article-card"</span><span class="fn">&gt;</span>
+    <span class="fn">&lt;img</span>
+      <span class="kw">v-if</span>=<span class="str">"coverUrl"</span>
+      <span class="kw">:src</span>=<span class="str">"coverUrl"</span>
+      <span class="kw">:alt</span>=<span class="str">"article.title"</span>
+      class=<span class="str">"card-cover"</span>
+    <span class="fn">/&gt;</span>
+    <span class="fn">&lt;div</span> class=<span class="str">"card-body"</span><span class="fn">&gt;</span>
+      <span class="fn">&lt;time</span> class=<span class="str">"card-date"</span><span class="fn">&gt;{{ date }}&lt;/time&gt;</span>
+      <span class="fn">&lt;h2</span> class=<span class="str">"card-title"</span><span class="fn">&gt;{{ article.title }}&lt;/h2&gt;</span>
+      <span class="fn">&lt;p</span> <span class="kw">v-if</span>=<span class="str">"article.excerpt"</span> class=<span class="str">"card-excerpt"</span><span class="fn">&gt;</span>
+        {{ article.excerpt }}
+      <span class="fn">&lt;/p&gt;</span>
+      <span class="fn">&lt;span</span> class=<span class="str">"card-read-more"</span><span class="fn">&gt;</span>Read more →<span class="fn">&lt;/span&gt;</span>
+    <span class="fn">&lt;/div&gt;</span>
+  <span class="fn">&lt;/NuxtLink&gt;</span>
+<span class="kw">&lt;/template&gt;</span></pre>
+      </div>
+    </section>
+
+    <section id="nuxt-single">
+      <h2><span class="step-num">7</span> Single Post Page</h2>
+      <p>Create <code>pages/blog/[slug].vue</code>:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">pages/blog/[slug].vue</span><span class="code-lang vue">vue</span></div>
+        <pre><span class="kw">&lt;script setup</span> lang=<span class="str">"ts"</span><span class="kw">&gt;</span>
+<span class="kw">const</span> config = <span class="fn">useRuntimeConfig</span>()
+<span class="kw">const</span> route = <span class="fn">useRoute</span>()
+
+<span class="kw">const</span> { data: article, error } = <span class="kw">await</span> <span class="fn">useFetch</span>(
+  <span class="str">`</span><span class="op">${</span>config.public.strapiUrl<span class="op">}</span><span class="str">/api/articles`</span>,
+  {
+    query: {
+      <span class="str">'filters[slug][$eq]'</span>: route.params.slug,
+      <span class="str">'populate'</span>: <span class="str">'cover'</span>,
+    },
+    transform: (res: <span class="kw">any</span>) =&gt; res.data?.[<span class="num">0</span>] ?? <span class="kw">null</span>,
+  }
+)
+
+<span class="fn">useHead</span>(() =&gt; ({
+  title: article.value?.title ?? <span class="str">'Post not found'</span>,
+  meta: [{ name: <span class="str">'description'</span>, content: article.value?.excerpt ?? <span class="str">''</span> }],
+}))
+
+<span class="kw">const</span> coverUrl = <span class="fn">computed</span>(() =&gt; {
+  <span class="kw">const</span> url = article.value?.cover?.url
+  <span class="kw">if</span> (!url) <span class="kw">return null</span>
+  <span class="kw">return</span> url.startsWith(<span class="str">'http'</span>) ? url : <span class="str">`</span><span class="op">${</span>config.public.strapiUrl<span class="op">}</span><span class="op">${</span>url<span class="op">}</span><span class="str">`</span>
+})
+
+<span class="kw">const</span> date = <span class="fn">computed</span>(() =&gt;
+  article.value
+    ? <span class="kw">new</span> <span class="fn">Date</span>(article.value.publishedAt).<span class="fn">toLocaleDateString</span>(<span class="str">'en-US'</span>, {
+        year: <span class="str">'numeric'</span>, month: <span class="str">'long'</span>, day: <span class="str">'numeric'</span>,
+      })
+    : <span class="str">''</span>
+)
+
+<span class="cm">// Render Strapi Blocks rich text as simple HTML</span>
+<span class="kw">function</span> <span class="fn">renderBlocks</span>(blocks: <span class="kw">any</span>[]): <span class="kw">string</span> {
+  <span class="kw">if</span> (!blocks) <span class="kw">return</span> <span class="str">''</span>
+  <span class="kw">return</span> blocks.<span class="fn">map</span>((block: <span class="kw">any</span>) =&gt; {
+    <span class="kw">const</span> text = block.children?.<span class="fn">map</span>((c: <span class="kw">any</span>) =&gt; {
+      <span class="kw">let</span> t = c.text ?? <span class="str">''</span>
+      <span class="kw">if</span> (c.bold)   t = <span class="str">`&lt;strong&gt;</span><span class="op">${</span>t<span class="op">}</span><span class="str">&lt;/strong&gt;`</span>
+      <span class="kw">if</span> (c.italic) t = <span class="str">`&lt;em&gt;</span><span class="op">${</span>t<span class="op">}</span><span class="str">&lt;/em&gt;`</span>
+      <span class="kw">if</span> (c.code)   t = <span class="str">`&lt;code&gt;</span><span class="op">${</span>t<span class="op">}</span><span class="str">&lt;/code&gt;`</span>
+      <span class="kw">return</span> t
+    }).<span class="fn">join</span>(<span class="str">''</span>)
+    <span class="kw">switch</span> (block.type) {
+      <span class="kw">case</span> <span class="str">'heading'</span>:  <span class="kw">return</span> <span class="str">`&lt;h</span><span class="op">${</span>block.level<span class="op">}</span><span class="str">&gt;</span><span class="op">${</span>text<span class="op">}</span><span class="str">&lt;/h</span><span class="op">${</span>block.level<span class="op">}</span><span class="str">&gt;`</span>
+      <span class="kw">case</span> <span class="str">'paragraph'</span>: <span class="kw">return</span> <span class="str">`&lt;p&gt;</span><span class="op">${</span>text<span class="op">}</span><span class="str">&lt;/p&gt;`</span>
+      <span class="kw">case</span> <span class="str">'list'</span>: {
+        <span class="kw">const</span> tag = block.format === <span class="str">'ordered'</span> ? <span class="str">'ol'</span> : <span class="str">'ul'</span>
+        <span class="kw">const</span> items = block.children.<span class="fn">map</span>((li: <span class="kw">any</span>) =&gt;
+          <span class="str">`&lt;li&gt;</span><span class="op">${</span>li.children.<span class="fn">map</span>((c: <span class="kw">any</span>) =&gt; c.text).<span class="fn">join</span>(<span class="str">''</span>)<span class="op">}</span><span class="str">&lt;/li&gt;`</span>
+        ).<span class="fn">join</span>(<span class="str">''</span>)
+        <span class="kw">return</span> <span class="str">`&lt;</span><span class="op">${</span>tag<span class="op">}</span><span class="str">&gt;</span><span class="op">${</span>items<span class="op">}</span><span class="str">&lt;/</span><span class="op">${</span>tag<span class="op">}</span><span class="str">&gt;`</span>
+      }
+      <span class="kw">case</span> <span class="str">'code'</span>: <span class="kw">return</span> <span class="str">`&lt;pre&gt;&lt;code&gt;</span><span class="op">${</span>text<span class="op">}</span><span class="str">&lt;/code&gt;&lt;/pre&gt;`</span>
+      <span class="kw">default</span>: <span class="kw">return</span> <span class="str">`&lt;p&gt;</span><span class="op">${</span>text<span class="op">}</span><span class="str">&lt;/p&gt;`</span>
+    }
+  }).<span class="fn">join</span>(<span class="str">'\n'</span>)
+}
+<span class="kw">&lt;/script&gt;</span>
+
+<span class="kw">&lt;template&gt;</span>
+  <span class="fn">&lt;main</span> class=<span class="str">"container"</span><span class="fn">&gt;</span>
+    <span class="fn">&lt;NuxtLink</span> to=<span class="str">"/"</span> class=<span class="str">"back-link"</span><span class="fn">&gt;</span>← Back to all posts<span class="fn">&lt;/NuxtLink&gt;</span>
+
+    <span class="fn">&lt;div</span> <span class="kw">v-if</span>=<span class="str">"!article &amp;&amp; !error"</span><span class="fn">&gt;</span>Loading…<span class="fn">&lt;/div&gt;</span>
+    <span class="fn">&lt;div</span> <span class="kw">v-else-if</span>=<span class="str">"error || !article"</span> class=<span class="str">"error"</span><span class="fn">&gt;</span>Post not found.<span class="fn">&lt;/div&gt;</span>
+
+    <span class="fn">&lt;article</span> <span class="kw">v-else</span> class=<span class="str">"post"</span><span class="fn">&gt;</span>
+      <span class="fn">&lt;img</span>
+        <span class="kw">v-if</span>=<span class="str">"coverUrl"</span>
+        <span class="kw">:src</span>=<span class="str">"coverUrl"</span>
+        <span class="kw">:alt</span>=<span class="str">"article.title"</span>
+        class=<span class="str">"post-cover"</span>
+      <span class="fn">/&gt;</span>
+      <span class="fn">&lt;time</span> class=<span class="str">"post-date"</span><span class="fn">&gt;{{ date }}&lt;/time&gt;</span>
+      <span class="fn">&lt;h1</span> class=<span class="str">"post-title"</span><span class="fn">&gt;{{ article.title }}&lt;/h1&gt;</span>
+      <span class="fn">&lt;div</span>
+        class=<span class="str">"post-content"</span>
+        <span class="kw">v-html</span>=<span class="str">"renderBlocks(article.content)"</span>
+      <span class="fn">/&gt;</span>
+    <span class="fn">&lt;/article&gt;</span>
+  <span class="fn">&lt;/main&gt;</span>
+<span class="kw">&lt;/template&gt;</span></pre>
+      </div>
+    </section>
+
+    <section id="nuxt-styles">
+      <h2><span class="step-num">8</span> Global Styles</h2>
+      <p>Create <code>assets/main.css</code>:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">assets/main.css</span><span class="code-lang">css</span></div>
+        <pre>*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f9fafb;
+  color: #111827;
+  line-height: 1.7;
+}
+
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+/* Header */
+.site-header { margin-bottom: 48px; }
+.site-header h1 { font-size: 2.4rem; font-weight: 800; margin-bottom: 6px; }
+.site-header p  { color: #6b7280; font-size: 1.1rem; }
+
+/* Article grid */
+.articles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+/* Card */
+.article-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.2s, transform 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.article-card:hover {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+.card-cover { width: 100%; height: 180px; object-fit: cover; }
+.card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.card-date    { font-size: 0.78rem; color: #9ca3af; }
+.card-title   { font-size: 1.15rem; font-weight: 700; line-height: 1.4; }
+.card-excerpt { font-size: 0.9rem; color: #6b7280; flex: 1; }
+.card-read-more { font-size: 0.85rem; font-weight: 600; color: #7c3aed; margin-top: 8px; }
+
+/* Single post */
+.back-link {
+  display: inline-block;
+  margin-bottom: 32px;
+  color: #7c3aed;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.back-link:hover { text-decoration: underline; }
+
+.post { max-width: 680px; }
+.post-cover { width: 100%; border-radius: 12px; margin-bottom: 24px; max-height: 400px; object-fit: cover; }
+.post-date  { font-size: 0.82rem; color: #9ca3af; margin-bottom: 8px; }
+.post-title { font-size: 2rem; font-weight: 800; margin-bottom: 28px; line-height: 1.3; }
+
+.post-content { font-size: 1rem; color: #374151; }
+.post-content p  { margin-bottom: 1.2em; }
+.post-content h2 { font-size: 1.4rem; font-weight: 700; margin: 2em 0 0.6em; }
+.post-content h3 { font-size: 1.2rem; font-weight: 700; margin: 1.6em 0 0.5em; }
+.post-content ul, .post-content ol { padding-left: 1.5em; margin-bottom: 1.2em; }
+.post-content li { margin-bottom: 0.4em; }
+.post-content pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px; overflow-x: auto; margin-bottom: 1.2em; font-size: 0.88rem; }
+.post-content code { background: #f3f4f6; padding: 2px 5px; border-radius: 4px; font-size: 0.88em; }
+.post-content pre code { background: transparent; padding: 0; }
+.post-content strong { font-weight: 700; }
+.post-content em { font-style: italic; }
+
+/* Utility */
+.loading { color: #6b7280; padding: 40px 0; }
+.error   { color: #ef4444; padding: 40px 0; }</pre>
+      </div>
+
+      <p>Now start the dev server and test it:</p>
+      <div class="code-block">
+        <div class="code-header"><span class="code-label">terminal (frontend)</span><span class="code-lang bash">bash</span></div>
+        <pre>npm run dev</pre>
+      </div>
+      <p>Open <code>http://localhost:3000</code> — you should see your blog listing. Click any post to view the full article.</p>
+      <div class="callout callout-success">
+        <div class="callout-icon">🎉</div>
+        <div class="callout-body"><strong>Local dev is working!</strong> Both Strapi (port 1337) and Nuxt (port 3000) should be running. You can add articles in Strapi admin and they appear instantly in the frontend.</div>
+      </div>
+    </section>
+
+    <!-- ─────────────── DEPLOY ─────────────── -->
+    <section id="deploy-strapi">
+      <h2><span class="step-num">9</span> Deploy Strapi to Strapi Cloud</h2>
+      <div class="callout callout-info">
+        <div class="callout-icon">☁️</div>
+        <div class="callout-body"><strong>Strapi Cloud</strong> is the official managed hosting for Strapi. It has a free Developer plan. Go to <strong>cloud.strapi.io</strong> to sign up.</div>
+      </div>
+      <ol class="steps">
+        <li>
+          <strong>Push your backend to GitHub</strong>
+          <div class="code-block"><div class="code-header"><span class="code-label">terminal</span><span class="code-lang bash">bash</span></div>
+          <pre>cd my-blog-backend
+git init
+git add .
+git commit -m "Initial Strapi blog"
+<span class="cm"># Then create a repo on github.com and push:</span>
+git remote add origin https://github.com/YOUR_USER/my-blog-backend.git
+git push -u origin main</pre></div>
+        </li>
+        <li>
+          <strong>Create a project on Strapi Cloud</strong>
+          Go to <code>cloud.strapi.io</code> → New Project → Connect your GitHub repo → Select the branch <code>main</code>.
+        </li>
+        <li>
+          <strong>Wait for deploy</strong>
+          Strapi Cloud builds and deploys your app. In ~3 minutes you'll get a live URL like <code>https://my-blog-backend-xxxx.strapiapp.com</code>.
+        </li>
+        <li>
+          <strong>Re-enable Public permissions on cloud</strong>
+          Open the cloud admin panel → Settings → Users &amp; Permissions → Roles → Public → check <code>find</code> &amp; <code>findOne</code> for Article → Save.
+        </li>
+        <li>
+          <strong>Re-add your articles</strong>
+          Cloud uses a separate database. Go to Content Manager and re-create your articles (or use Strapi's data transfer feature for larger datasets).
+        </li>
+      </ol>
+    </section>
+
+    <section id="deploy-nuxt">
+      <h2><span class="step-num">10</span> Deploy Nuxt to Vercel</h2>
+      <div class="callout callout-info">
+        <div class="callout-icon">▲</div>
+        <div class="callout-body"><strong>Vercel</strong> is the best free host for Nuxt 3. It detects Nuxt automatically and deploys with zero configuration.</div>
+      </div>
+      <ol class="steps">
+        <li>
+          <strong>Push your frontend to GitHub</strong>
+          <div class="code-block"><div class="code-header"><span class="code-label">terminal</span><span class="code-lang bash">bash</span></div>
+          <pre>cd my-blog-frontend
+git init
+git add .
+git commit -m "Initial Nuxt blog frontend"
+git remote add origin https://github.com/YOUR_USER/my-blog-frontend.git
+git push -u origin main</pre></div>
+        </li>
+        <li>
+          <strong>Import on Vercel</strong>
+          Go to <code>vercel.com</code> → Add New Project → Import your <code>my-blog-frontend</code> repo. Vercel will detect it as a Nuxt app automatically.
+        </li>
+        <li>
+          <strong>Set the environment variable</strong>
+          In the Vercel project settings, before deploying, add this env var:
+          <div class="code-block"><div class="code-header"><span class="code-label">Vercel → Environment Variables</span><span class="code-lang env">env</span></div>
+          <pre>NUXT_PUBLIC_STRAPI_URL = https://my-blog-backend-xxxx.strapiapp.com</pre></div>
+          Replace the URL with your actual Strapi Cloud URL.
+        </li>
+        <li>
+          <strong>Deploy!</strong>
+          Click Deploy. In ~1 minute your blog is live at <code>https://my-blog-frontend.vercel.app</code>.
+        </li>
+      </ol>
+    </section>
+
+    <section id="env-vars">
+      <h2><span class="step-num">✓</span> Environment Variables Summary</h2>
+      <table>
+        <thead><tr><th>Where</th><th>Variable</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Nuxt local dev (<code>.env</code>)</td><td><code>NUXT_PUBLIC_STRAPI_URL</code></td><td><code>http://localhost:1337</code></td></tr>
+          <tr><td>Vercel (production)</td><td><code>NUXT_PUBLIC_STRAPI_URL</code></td><td>Your Strapi Cloud URL</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-warn" style="margin-top: 24px">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body"><strong>CORS on Strapi Cloud</strong> — If you see API errors in production, go to Strapi Cloud admin → Settings → Security → CORS and add your Vercel URL (<code>https://my-blog-frontend.vercel.app</code>) to the allowed origins.</div>
+      </div>
+
+      <div class="callout callout-success" style="margin-top: 16px">
+        <div class="callout-icon">🚀</div>
+        <div class="callout-body">
+          <strong>You're live!</strong>
+          Your full-stack blog is now deployed:
+          <br>• <strong>CMS:</strong> Strapi Cloud — manage posts from anywhere
+          <br>• <strong>Frontend:</strong> Vercel — auto-deploys on every git push
+          <br>• <strong>Cost:</strong> $0 on both free tiers
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Built with Strapi v5 + Nuxt 3 + Strapi Cloud + Vercel &nbsp;·&nbsp; Guide generated May 2026
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>
